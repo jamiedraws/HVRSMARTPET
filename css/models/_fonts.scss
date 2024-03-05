@@ -1,0 +1,26 @@
+@use "sass:map";
+
+$list: (
+    first: urw-din-condensed,
+    second: roboto,
+    third: urw-din
+);
+
+$-size: 1rem;
+$-line-height: 1;
+
+@mixin first ($size: $-size, $line-height: $-line-height) {
+    font: #{$size}/#{$line-height} map.get($list, first), sans-serif;
+    text-transform: uppercase;
+    @content;
+}
+
+@mixin second ($size: $-size, $line-height: $-line-height) {
+    font: #{$size}/#{$line-height} map.get($list, second), sans-serif;
+    @content;
+}
+
+@mixin third ($size: $-size, $line-height: $-line-height) {
+    font: #{$size}/#{$line-height} map.get($list, third), sans-serif;
+    @content;
+}

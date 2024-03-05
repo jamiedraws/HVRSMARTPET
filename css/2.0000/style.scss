@@ -1,0 +1,30 @@
+@use "../interfaces/ui-page" as page;
+@use "../interfaces/ui-deal" as deal;
+@use "../interfaces/ui-promo-banner";
+@use "../models/colors";
+
+main:not(.hero) {
+    min-height: 100vh;
+}
+
+.view:not(.nav) {
+    position: relative;
+}
+
+.copy {
+    h2 {
+        margin: 0.5em 0;
+    }
+
+    h3 + p {
+        margin-top: 0.5em;
+    }
+
+    picture:first-child {
+        margin: auto auto 1em;
+    }
+
+    &:not(:last-child) {
+        padding-bottom: 2em;
+    }
+}

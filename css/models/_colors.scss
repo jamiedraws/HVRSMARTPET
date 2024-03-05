@@ -1,0 +1,15 @@
+@use "sass:map";
+
+$list: (
+    _black: black,
+    _white: white,
+    first: #6a4b9e,
+    second: #003366,
+    third: #666666,
+    fourth: #da1212,
+    fifth: #bb293d
+);
+
+@function get ($name) {
+    @return map.get($list, $name);
+};

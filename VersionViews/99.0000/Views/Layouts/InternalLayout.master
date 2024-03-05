@@ -1,0 +1,165 @@
+﻿<%@ Master Language="C#" Inherits="System.Web.Mvc.ViewMasterPage<ClientSiteViewData>" %>
+<%@ Import Namespace="Dtm.Framework.ClientSites" %>
+
+<% 
+	var isIndex = DtmContext.PageCode == "Index";
+	var isCOVID19 = DtmContext.PageCode == "COVID19";
+	var isFrontPage = DtmContext.Page.IsStartPageType && DtmContext.PageCode != "PaymentForm";
+	var isSubPage = isFrontPage && !isIndex;
+	var isMobile = DtmContext.IsMobile;
+	var isDesktop = !isMobile;
+	var isReviewPage = DtmContext.PageCode == "ReviewPage";
+	var isUpsell = DtmContext.Page.PageType.Equals("Upsell", StringComparison.InvariantCultureIgnoreCase) || isReviewPage;
+
+	var dtm = isMobile ? "@mv" : "@dv";
+	var dtmIn = isMobile ? "dtm__in--mv" : "dtm__in--dv";
+	var ext = DtmContext.ApplicationExtension;
+
+	var getTwitterImage = SettingsManager.ContextSettings["SocialPlugins.Twitter.OpenGraphImage"];
+	var getFacebookImage = SettingsManager.ContextSettings["SocialPlugins.Facebook.OpenGraphImage"];
+%>
+
+<!DOCTYPE html>
+<html lang="en" class="dtm">
+	
+	<head>
+
+		<title><%= Model.PageTitle %></title>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<meta name="description" content="<%= Model.PageMetaDescription %>">
+		<meta name="keywords" content="<%= Model.PageMetaKeywords %>">
+		<% var androidThemeBarColor = SettingsManager.ContextSettings["AndroidThemeBarColor", "#ffffff"]; %>
+		<meta name="theme-color" content="<%= androidThemeBarColor %>">
+
+		<!-- // Open Graph Metadata -->
+		<meta property="og:title" content="<%= Model.PageTitle %>">
+		<meta property="og:type" content="website">
+		<meta property="og:description" content="<%= Model.PageMetaDescription %>">
+		<meta property="og:url" content="<%= DtmContext.Domain.FullDomainOfferVersionUrl(DtmContext.PageCode) %>">
+		<meta property="og:image" content="<%= getFacebookImage %>">
+
+		<!-- // Twitter Metadata -->
+		<meta name="twitter:card" content="summary_large_image">
+		<meta name="twitter:title" content="<%= Model.PageTitle %>">
+		<meta name="twitter:description" content="<%= Model.PageMetaDescription %>">
+		<meta name="twitter:image" content="<%= getTwitterImage %>">
+		<meta name="twitter:domain" content="<%= DtmContext.Domain.FullDomainOfferVersionUrl(DtmContext.PageCode) %>">
+
+		<% if (DtmContext.IsProxyIpAddress || DtmContext.CampaignDomains.Any(d => d.DomainId == DtmContext.DomainId && d.Domain.ToLower().Contains("dtmstage"))) { %>
+
+			<meta name="robots" content="noindex, nofollow">
+
+		<% } else { %>
+
+			<meta name="google-site-verification" content="<%= Model.PageMetaVerify %>">
+			<meta name="msvalidate.01" content="617F9E44E7841BBC8E57FE0772BB9DD9">
+			<link rel="canonical" href="<%= DtmContext.Domain.FullDomain %>">
+
+		<% } %>
+
+		<link rel="shortcut icon" href="/favicon.ico">
+		<link rel="apple-touch-icon" sizes="57x57" href="/images/apple-icon-57x57.png">
+		<link rel="apple-touch-icon" sizes="72x72" href="/images/apple-icon-72x72.png">
+		<link rel="apple-touch-icon" sizes="114x114" href="/images/apple-icon-114x114.png">
+		<link rel="apple-touch-icon" sizes="144x144" href="/images/apple-icon-144x144.png">
+
+		<%= Html.Partial("FrameworkCss") %>
+		<% 
+			var resourcesHeader = "Resources-Header";
+			if ( ViewEngines.Engines.FindPartialView(ViewContext.Controller.ControllerContext, resourcesHeader).View != null ) {
+				Html.RenderPartial(resourcesHeader, Model);
+			}
+		%>
+
+		<% if (!isFrontPage) {
+			Html.RenderPartial("Scripts");
+		} %>
+
+		<script defer src="/Shared/Customers/575/js/observer.js"></script>
+		<script defer src="/Shared/Customers/575/js/lazy.js"></script>
+		<script defer src="/Shared/Customers/575/js/app.js"></script>
+		<script defer src="/Shared/Customers/575/js/page.js"></script>
+
+		<asp:ContentPlaceHolder ID="head" runat="server"></asp:ContentPlaceHolder>
+
+	</head>
+
+	<body class="dtm__in <%= dtmIn %>">
+
+		<%= Html.Partial("Header") %>
+
+		<% if (!isFrontPage) { %>
+		<div class="view view--checkout">
+			<div class="view__in">
+				<%= Html.Partial("OrderFlowPhase") %>
+			</div>
+		</div>
+		<% } %>
+
+		<asp:ContentPlaceHolder ID="MainContent" runat="server"></asp:ContentPlaceHolder>
+
+		<footer aria-label="Copyrights and policies" class="view view--footer">
+			<div class="view__in">
+		
+				<% if (isFrontPage)
+					{
+						Html.RenderPartial("Warranty-Short", Model);
+						Html.RenderSnippet("FOOTER-FRONTEND");
+						if (!isCOVID19) {
+							%>
+							<span class="toast toast--alert toast--hidden">
+								<span class="toast__text">
+									Supporting our employees and consumers through the challenges of COVID-19. <a href="COVID19<%= ext %>" id="footer-covid19">Learn More</a>
+								</span>
+								<div class="toast__input">
+									<button class="toast__close"></button>
+								</div>
+							</span>
+							<%
+						}
+					}
+					else {
+						Html.RenderSnippet("COMMON-FOOTER");
+				} %>
+		
+			</div>
+
+			<% if (isFrontPage) {
+				%>
+				<script defer src="/Shared/Customers/575/js/nav.js"></script>
+				<%
+				using (Html.BeginForm())
+				{
+					Html.RenderSnippet("PRODUCTSELECTION");
+				}
+				Html.RenderPartial("Scripts");
+				Html.RenderSnippet("ORDERFORMSCRIPT");
+			} %>
+
+			<div class="l-controls top-absolute">
+				<% Html.RenderSiteControls(SiteControlLocation.ContentTop); %>
+				<% Html.RenderSiteControls(SiteControlLocation.ContentBottom); %>
+				<% Html.RenderSiteControls(SiteControlLocation.PageBottom); %>
+			</div>
+		</footer>
+
+		<% if (isUpsell) { %>
+			<script defer src="/Shared/Customers/575/js/store.js"></script>
+			<script defer type="text/javascript" src="/Shared/Customers/575/js/SummaryReviewCartEngine.js"></script>
+		<% } %>
+
+		<%= Html.Partial("AffirmJs") %>
+
+		<% 
+			var resourcesFooter = "Resources-Footer";
+			if ( ViewEngines.Engines.FindPartialView(ViewContext.Controller.ControllerContext, resourcesFooter).View != null ) {
+				Html.RenderPartial(resourcesFooter, Model);
+			}
+		%>
+		
+		<%= Model.FrameworkVersion %>
+
+	</body>
+
+</html>
